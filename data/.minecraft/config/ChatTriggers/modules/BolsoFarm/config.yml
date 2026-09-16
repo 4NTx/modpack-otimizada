@@ -1,0 +1,364 @@
+# ============================================================================
+# BolsoFarm — configuração da macro de farm/reparo (Minecraft 1.8.9)
+# ============================================================================
+#
+# COMO APLICAR ALTERAÇÕES
+# 1. Edite somente os valores depois dos ":" e mantenha a indentação de 2 espaços.
+# 2. Salve este arquivo.
+# 3. No Minecraft, use /ct reload (ou reinicie o jogo).
+#
+# COMANDOS
+# /bolsofarm start|stop      controla somente a farm manualmente.
+# A tecla F pertence ao BolsoCiclo.
+# /bolsofarm help            mostra os comandos no chat.
+# /bolsofarm tutorial        mostra o tutorial resumido no chat.
+# /bolsofarm status          mostra estado e estatísticas.
+# /bolsofarm inicio          apaga o ponto salvo; próximo depósito começa no primeiro baú.
+# /bolsofarm continuar       liga retomando o último baú de depósito salvo.
+# /bolsofarm calibrar esqueleto|aranha 1..5 calibra a parede indicada sem trocar perfil.
+# /bolsofarm home esqueleto|aranha salva o ponto da mobtrap indicado sem trocar perfil.
+# /rep banir [id]      inclui um drop na blacklist; sem id usa o item na mão.
+# /rep desbanir <id>   remove um item da blacklist.
+# /rep banidos         mostra a blacklist atual.
+# /rep id               mostra no chat o ID do item atualmente na mão.
+# /rep reparar         atualiza /home reparar; o bloco de ferro é achado automaticamente.
+# /repav2mover         liga/desliga movimento contínuo (normalmente deixe desligado).
+#
+# SETUP — MKB / HOME BAUS
+# - Parede voltada para NORTH, com 5 baús de altura e quantas colunas quiser.
+# - Pode alternar baú normal e baú com armadilha; deixe corredor livre a 1 bloco.
+# - Fique no corredor, alinhado ao baú central da PRIMEIRA coluna (2 linhas acima
+#   e 2 abaixo) e execute: /sethome baus
+# - A mira padrão atende a MKB normal. Se algum baú não abrir, com a macro
+#   desligada fique no /home baus, mire no centro de cada linha e rode:
+#   /rep calibrar 1, /rep calibrar 2, /rep calibrar 3, /rep calibrar 4,
+#   /rep calibrar 5.
+# - Materiais podem ficar em qualquer altura; o topo é recomendado.
+#
+# SETUP — FARM E REPARO
+# - No ponto onde deve atacar mobs: /bolsofarm home
+# - Na posição de reparo, deixe o bloco de ferro a até 4 blocos de distância.
+#   A home pode ficar de frente para ele. Execute: /rep reparar
+#
+# ============================================================================
+
+# ============================================================================
+# 1. LOCAIS / HOMES
+# ============================================================================
+homes:
+  # Comandos usados pela macro para se locomover. /bolsofarm home e /bolsofarm reparar
+  # também convertem estes valores para /sethome com o mesmo nome.
+  farm: /home mob
+  repair: /home reparar
+  storage: /home baus
+  # Home exclusiva que a macro atualiza (com dois /sethome) no último baú onde
+  # guardou. Não a use manualmente para outro local.
+  temporaryStorage: /home bolsofarmdeposito
+
+# PERFIS DO CICLO. Cada um possui sua própria home, parede MKB, itens e
+# calibração. /bolsofarm perfil <nome> seleciona um deles; o BolsoCiclo faz
+# isso sozinho. Altere somente os nomes após /home conforme a sua instalação.
+profiles:
+  esqueleto:
+    homes:
+      farm: /home mob_esqueleto
+      storage: /home baus_esqueleto
+      temporaryStorage: /home deposito_esqueleto
+    inventory:
+      storageOnlyItems: minecraft:bow
+    selling:
+      commandProtectItems: minecraft:bow
+      sales:
+        osso:
+          item: minecraft:bone
+          home: /home osso
+    discard:
+      enabled: true
+      items: minecraft:arrow
+  aranha:
+    homes:
+      farm: /home mob_aranha
+      storage: /home baus_aranha
+      temporaryStorage: /home deposito_aranha
+    inventory:
+      storageOnlyItems: minecraft:string
+    selling:
+      commandProtectItems: minecraft:string
+      sales:
+        olho_aranha:
+          item: minecraft:spider_eye
+          home: /home olho_aranha
+    discard:
+      enabled: false
+      items: ""
+
+# ============================================================================
+# 2. REPARO E TROCA DE FERRAMENTAS
+# ============================================================================
+repair:
+  # Quantidade absoluta de usos RESTANTES que dispara o reparo.
+  # Ex.: uma espada de 8 usos deve usar 2, não 30.
+  lowDurability: 30
+  # Reserva só é usada se tiver ao menos esta quantidade de usos restantes.
+  # 31 evita pegar uma ferramenta que já chegaria no limite de reparo (30).
+  minReserveDurability: 31
+  # true: aceita apenas o MESMO ID da ferramenta que iniciou esta execução.
+  # Ex.: minecraft:stone_sword só será trocada por outra minecraft:stone_sword.
+  # false: pode escolher a melhor reserva disponível (padrão).
+  # Nesta configuração de espadas de diamante, nunca pega outro tipo de arma.
+  sameToolTypeOnly: true
+  # Se pegar outro tipo e não houver material para repará-lo, devolve no baú
+  # durante a troca e procura novamente o tipo com que a macro começou.
+  fallbackToStartToolOnMissingMaterial: true
+  # ESCOLHA O COMPORTAMENTO ao chegar em lowDurability:
+  #
+  # repair_then_replace = REPARA PRIMEIRO. Se não achar mais material de
+  #                       reparo, devolve/troca pela espada reserva do baú.
+  # replace_then_repair = TROCA PRIMEIRO. Procura espadas reserva nas colunas;
+  #                       se acabarem, busca material e repara a espada atual.
+  # replace_only         = nunca repara; só devolve a gasta e pega reserva.
+  # repair_only_stop     = nunca troca; só repara e desliga ao acabar material.
+  #
+  # Valor atual: repara primeiro; se faltar material de reparo, procura uma
+  # espada reserva antes de continuar, preservando a espada que está em uso.
+  maintenanceMode: repair_then_replace
+
+# ============================================================================
+# 3. INVENTÁRIO, BAÚS E DEPÓSITO
+# ============================================================================
+inventory:
+  # A macro começa a guardar quando atingir qualquer um destes limites.
+  # Valores mais altos fazem viagens antes da mochila estar quase cheia.
+  # Estes valores deixam apenas 2–4 espaços livres, sem ficar indo cedo demais.
+  minFreeSlots: 2
+  minStorableStacks: 32
+  # true: também guarda drops nos slots 1–9 da hotbar. Espadas/machados e uma
+  # pilha do material de reparo continuam protegidos automaticamente.
+  depositHotbar: true
+  # Itens que são somente drops guardáveis: nunca serão equipados, usados na
+  # farm, reparados, vendidos ou descartados. Separe IDs por vírgula.
+  storageOnlyItems: minecraft:bow
+
+chests:
+  # Tempo de caminhada à direita entre baús normal/armadilha alternados.
+  # A MKB padrão usa 15. Aumente/diminua apenas se ela parar fora do próximo baú.
+  stepTicks: 15
+  # false usa a geometria padrão da MKB; true usa valores salvos por /rep calibrar.
+  useSavedCalibration: true
+  # Proteção contra caminhada infinita caso a parede não termine corretamente.
+  maxColumns: 128
+  # Só depois de percorrer a parede inteira o próximo depósito volta ao primeiro
+  # baú. Falhas locais preservam o último ponto salvo.
+  resetStorageProgressAfterFullSearch: true
+  # Alcance horizontal ao buscar bloco de reparo ou espada reserva:
+  # first_column = usa somente a primeira coluna de baús.
+  # wall         = percorre todas as colunas até maxColumns.
+  # Combine com materials.searchAllRows logo abaixo para escolher só a fileira
+  # superior ou as cinco alturas de cada coluna.
+  materialSearch: wall
+  # Na troca de espada, verifica as 5 alturas de cada coluna e para depois
+  # desta quantidade de colunas se não encontrar outra espada de diamante.
+  replacementSearchMaxColumns: 5
+  # true: ao procurar espada, verifica topo + quatro baús abaixo na mesma
+  # coluna antes de andar para a direita. É independente da busca de blocos.
+  replacementSearchAllRows: true
+  # Ao buscar bloco de diamante (ou outro material de reparo), percorre esta
+  # quantidade de baús na horizontal da primeira fileira. Se não encontrar,
+  # maintenanceMode: repair_then_replace troca para uma espada reserva.
+  materialSearchMaxColumns: 10
+
+storage:
+  # Salva o último baú que recebeu drops para /bolsofarm continuar retomá-lo.
+  # O início normal (/bolsofarm) sempre usa o primeiro baú de drops.
+  # Use /bolsofarm inicio, com a macro desligada, para apagar este ponto salvo.
+  rememberLastChest: true
+  # true: usa a home temporária do último baú para voltar direto a ele.
+  useTemporaryHome: true
+  # Depois de esgotar as tentativas de abertura, faz este número de cruzes de
+  # microajustes agachado (direita/esquerda/frente/trás), volta ao ponto central
+  # e tenta o MESMO baú novamente antes de sair.
+  chestRealignAttempts: 2
+  # Depois desta quantidade de falhas seguidas para abrir/depositar, esquece
+  # a home temporária e o último ponto, equivalente a /bolsofarm inicio, e
+  # reinicia a macro pelo /home mob. Os itens continuam no inventário.
+  failuresBeforeFreshStart: 3
+  # Espera máxima antes do segundo /sethome (20 ticks = 1 segundo). Quando o
+  # servidor responde que a home existe, a confirmação ocorre em 0,4 s.
+  temporaryHomeConfirmTicks: 20
+  # Depósito em lote: todas as pilhas elegíveis são enviadas no mesmo baú,
+  # sempre com confirmação antes da próxima para não perder itens. A espera
+  # 0 é o modo rápido.
+  transferDelayTicks: 0
+
+# ============================================================================
+# 3.1 VENDA OPCIONAL DE DROPS
+# ============================================================================
+# true: antes de guardar no /home baus, vende os itens abaixo nas placas.
+# false: desliga a venda e mantém somente o depósito normal nos baús.
+#
+# PREPARO (faça uma vez para cada venda):
+# 1. Crie a home configurada, por exemplo /sethome linha.
+# 2. Vá à placa de venda, fique olhando diretamente para ela e use:
+#    /bolsofarm vender calibrar linha
+# 3. Repita para olho_aranha.
+# A macro executa /esconder, dá /home, pula após o teleporte e ataca somente a
+# placa calibrada, sempre sem Shift — igual à BolsoVender.
+selling:
+  enabled: true
+  # MÉTODO DE VENDA:
+  # command = usa /vender mobs (padrão). Antes, guarda os arcos configurados
+  #           em commandProtectItems para que o comando não os venda.
+  # sign    = usa as placas calibradas abaixo, como nas versões anteriores.
+  method: command
+  command: /vender mobs
+  # Espera após o comando antes de retomar a mobtrap (20 ticks = 1 segundo).
+  commandWaitTicks: 20
+  # Itens protegidos antes de /vender mobs. Arcos e linha são guardados;
+  # nesta farm de aranha, somente olho de aranha é vendido. Separe IDs por vírgula.
+  commandProtectItems: minecraft:bow,minecraft:string
+  # Emergência: se o baú falhar quando a mochila já estiver cheia, executa
+  # /vender mobs mesmo com arcos no inventário. Evita a macro travar tentando
+  # guardar; os arcos serão vendidos nessa situação.
+  commandWhenStorageFails: true
+  # Minutos entre viagens exclusivas para venda. Zero desliga essa viagem: a
+  # macro vende somente quando a mochila já precisa ser guardada (recomendado).
+  periodicCheckMinutes: 0
+  # Mantém a venda sem criar viagens por poucos itens. Com intervalo 0, ela
+  # continua aproveitando apenas as idas necessárias ao depósito.
+  onlyPeriodic: true
+  # Mesmo com onlyPeriodic, se já precisar ir guardar no baú, vende antes para
+  # aproveitar a parada. Não cria uma viagem extra só para vender.
+  sellWhenStoring: true
+  # Na farm de aranha, qualquer olho já é vendido quando a mochila encher.
+  # Não cria uma viagem extra: só é avaliado durante a ida necessária ao depósito.
+  minimumItemsWhenStoring: 1
+  # Fecha a loja/menu antes do teleporte para não interferir no clique da placa.
+  menuOffCommand: /menuloja off
+  hideCommand: /esconder
+  # Esperas em ticks (20 ticks = 1 segundo). Os padrões são seguros e rápidos.
+  warpWaitTicks: 55
+  signAttacksPerStack: 1
+  signAttackHoldTicks: 8
+  resultWaitTicks: 12
+  # Se a quantidade não cair após estas confirmações, abandona a placa e tenta
+  # o depósito normal. Evita ficar atacando uma placa que não está vendendo.
+  maxNoProgressChecks: 5
+  sales:
+    olho_aranha:
+      item: minecraft:spider_eye
+      home: /home olho_aranha
+
+materials:
+  # true + chests.materialSearch: wall = verifica os 5 baús verticais de cada
+  # coluna antes de caminhar à direita para a próxima. O limite horizontal
+  # continua sendo chests.materialSearchMaxColumns (10).
+  # false pesquisaria apenas o baú do topo da coluna.
+  searchAllRows: true
+
+# Itens da blacklist não entram nos baús e ficam no inventário.
+blacklist:
+  # IDs que nunca entram nos baús, separados por vírgula. Eles ficam no inventário.
+  # IDs vanilla comuns: minecraft:rotten_flesh,minecraft:bone,minecraft:string,
+  # minecraft:gunpowder,minecraft:spider_eye,minecraft:arrow,minecraft:ender_pearl,
+  # minecraft:slime_ball,minecraft:blaze_rod,minecraft:leather
+  # Para descobrir qualquer outro, segure-o e use /rep id.
+  items: ""
+
+# Itens desta lista são jogados fora da mochila antes de ela ir guardar drops.
+# Assim não ocupam vagas nem entram nos baús. Não usa mouse físico/Windows:
+# o descarte é feito pelo Container interno do Minecraft. Para desligar sem
+# apagar sua lista, troque enabled para false.
+discard:
+  enabled: true
+  # Espera entre cada descarte. Evita reenviar o drop antes da mochila atualizar.
+  # 20 ticks = 1 segundo. O padrão de 6 é rápido, mas seguro para 1.8.9.
+  delayTicks: 6
+  items: minecraft:arrow
+
+# ============================================================================
+# 4. FERRAMENTAS EXTRAS (MODS/SERVIDORES)
+# ============================================================================
+# Elas se somam às espadas e machados vanilla.
+# Já suportadas automaticamente (não precisa repetir abaixo):
+# minecraft:wooden_sword -> minecraft:planks | minecraft:wooden_axe -> minecraft:planks
+# minecraft:stone_sword -> minecraft:stone | minecraft:stone_axe -> minecraft:stone
+# minecraft:iron_sword -> minecraft:iron_block | minecraft:iron_axe -> minecraft:iron_block
+# minecraft:golden_sword -> minecraft:gold_block | minecraft:golden_axe -> minecraft:gold_block
+# minecraft:diamond_sword -> minecraft:diamond_block | minecraft:diamond_axe -> minecraft:diamond_block
+# Dê um nome qualquer sem ':' para cada entrada. item e repairMaterial são IDs completos.
+# priority maior é escolhida primeiro quando houver mais de uma reserva.
+# Exemplo:
+# customTools:
+#   minha_espada_mod:
+#     item: "modid:minha_espada"
+#     repairMaterial: "modid:bloco_de_reparo"
+#     priority: 60
+customTools:
+
+# ============================================================================
+# 5. FARM E COMBATE
+# ============================================================================
+farm:
+  # true ativa autoclick direto somente durante FARMING.
+  autoClick: true
+  # true procura e ataca o mob vivo mais próximo, mesmo nos lados ou nas costas.
+  # false mantém o autoclick normal, apenas na mira atual/fixa.
+  targetNearestMob: true
+  # Alcance máximo para procurar o mob mais próximo. Use valor compatível com seu servidor.
+  nearestMobRange: 4.5
+  # all = qualquer mob; hostile = só hostis; passive = só não hostis.
+  nearestMobType: all
+  # Desativado: não força a câmera durante a farm.
+  lockAim: false
+  # Intervalo entre cliques: 1=20/s, 2=10/s, 4=5/s. Padrão seguro: 2.
+  clickIntervalTicks: 2
+  # Se a ferramenta não perder durabilidade nesse tempo, volta para /home mob.
+  noWearReturnSeconds: 60
+  # Raio máximo ao redor do ponto salvo por /bolsofarm farm. Se a macro entrar
+  # em FARMING fora dele (por exemplo, /home baus), ela volta imediatamente.
+  locationGuardRange: 8
+
+# ============================================================================
+# 6. CONTINUIDADE, LIMITES E RECUPERAÇÃO
+# ============================================================================
+behavior:
+  # Se estava ligada antes de desconectar, retoma automaticamente após relogar.
+  resumeAfterRelog: true
+  # Dá um pulo curto após cada /home para destravar teleporte em alguns servidores.
+  jumpAfterTeleport: true
+
+safety:
+  # Valor-base para instalações antigas. As tentativas alternam clique nativo
+  # e botão direito real.
+  chestOpenRetries: 4
+  # Limite próprio do depósito de drops; depois ainda faz os realinhamentos de
+  # storage.chestRealignAttempts antes de recuperar/reiniciar.
+  depositOpenRetries: 4
+  # Limite próprio para procurar bloco de reparo ou espada nos baús. Menor
+  # evita gastar muito tempo em um baú vazio/que não abriu.
+  restockOpenRetries: 3
+  # Espera após clicar no baú, em ticks (20 ticks = 1 segundo).
+  chestOpenWaitTicks: 12
+  # Se qualquer estado (baú, warp ou reparo) durar mais que isso, entra na recuperação.
+  stateTimeoutSeconds: 30
+
+recovery:
+  # true: em falhas recuperáveis a macro espera e recomeça sozinha pela /home mob.
+  # false: ela para no erro e espera você ligar novamente com /bolsofarm start.
+  autoRestart: true
+  # Tempo de espera antes de reiniciar após uma falha recuperável.
+  restartDelaySeconds: 3
+  # 0 = sem limite. Outro número limita reinícios seguidos antes de parar por segurança.
+  maxConsecutiveRestarts: 0
+  # Reinicia se o bloco de ferro não reduzir a durabilidade após as tentativas.
+  restartOnRepairNoProgress: true
+  # Reinicia se qualquer estado ficar travado além de stateTimeoutSeconds.
+  restartOnStateTimeout: true
+
+# FLUXO RESUMIDO
+# 1. /bolsofarm start liga manualmente. No ciclo, o BolsoCiclo é quem inicia.
+# 2. Na farm, ataca; ao chegar em repair.lowDurability, para antes de quebrar.
+# 3. maintenanceMode define se procura material, troca pela reserva ou para ao acabar material.
+# 4. No reparo, procura bloco de ferro próximo, usa botão direito virtual e confirma dano.
+# 5. Com reparo concluído, retorna à /home mob e retoma a farm.
+# 6. Falha recuperável segue as opções recovery acima.

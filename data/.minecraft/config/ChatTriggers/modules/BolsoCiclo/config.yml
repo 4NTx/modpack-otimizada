@@ -1,0 +1,22 @@
+# =============================================================================
+# BolsoCiclo — sequência automática: esqueleto -> aranha -> BolsoArcos
+# =============================================================================
+# O ciclo é o ÚNICO responsável por ligar BolsoFarm/BolsoArcos enquanto ativo.
+# Após editar, execute /ct reload. Use /bolsociclo help para os comandos.
+phases:
+  skeleton:
+    profile: esqueleto
+    hours: 3
+  spider:
+    profile: aranha
+    hours: 3
+  repair:
+    hours: 3
+timing:
+  # Espera após a troca de perfil antes de ligar a macro correspondente.
+  startDelayTicks: 50
+
+behavior:
+  # Mantém fase, tempo e fluxo após reinício do servidor, reconexão ou relog.
+  # O contador fica pausado enquanto não houver mundo/jogador carregado.
+  resumeAfterRelog: true

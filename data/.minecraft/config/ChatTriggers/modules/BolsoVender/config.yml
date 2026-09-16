@@ -1,0 +1,98 @@
+# ============================================================================
+# BolsoVender — Minecraft 1.8.9 / ChatTriggers
+# ============================================================================
+# Depois de editar, use /ct reload. Ajuda: /bolsovender help
+# Comandos principais: /bolsovender, /bolsovender status,
+# /bolsovender inicio e /bolsovender calibrar bau 1..5.
+# Comandos antigos continuam funcionando por compatibilidade.
+
+general:
+  # Fecha o menu da loja antes de iniciar a rotina de venda.
+  menuOffCommand: /menuloja off
+  # Executado antes de cada teleporte para vender um item.
+  hideCommand: /esconder
+
+automation:
+  # Depois desta quantidade de baús consecutivos sem itens configurados em
+  # sales, a BolsoVender para e liga a BolsoFarm automaticamente.
+  # Use 0 para desligar este comportamento.
+  emptyChestsBeforeFarm: 50
+  # Comando cliente da macro que será iniciada ao terminar a venda.
+  # Deve ser uma macro DESLIGADA, pois /bolsofarm funciona como liga/desliga.
+  resumeFarmCommand: /bolsofarm
+  # true: antes de iniciar a BolsoFarm, executa /bolsofarm inicio para ignorar
+  # qualquer ponto temporário de baú salvo e começar pelo fluxo principal.
+  resetFarmBeforeStart: true
+  # true: antes de iniciar a BolsoFarm, vende os últimos itens configurados
+  # que ainda estiverem no inventário.
+  sellInventoryBeforeFarm: true
+
+homes:
+  # Home do terreno onde ficam os baús de itens para venda.
+  storage: /home baus
+  # Esta home será sobrescrita (o servidor pede /sethome duas vezes). A macro
+  # volta por ela diretamente ao baú atual depois de cada venda.
+  temporaryReturn: /home bolsovender
+
+storage:
+  # Progresso é salvo como coluna/linha e retomado a partir da home principal
+  # apenas no início; durante uma execução ela usa a home temporária acima.
+  maxColumns: 128
+  stepTicks: 15
+  # Aguarda após o segundo /sethome antes de ir vender (20 ticks = 1 segundo).
+  temporaryHomeWaitTicks: 25
+  rowPitch: -53,-34,0,34,53
+
+sales:
+  # Cada item possui uma ID do Minecraft e a home para sua placa de venda.
+  # Duplique um bloco abaixo para adicionar outras vendas.
+  linha:
+    item: minecraft:string
+    home: /home linha
+  olho_aranha:
+    item: minecraft:spider_eye
+    home: /home olhodearanha
+  osso:
+    item: minecraft:bone
+    home: /home osso
+    # 1 vende qualquer quantidade; use 64 se quiser somente packs completos.
+    minimumStackSize: 1
+
+# Itens que devem ser removidos diretamente dos baús e jogados fora. Eles não
+# passam pelo inventário, não são vendidos e nem guardados em outro baú.
+# Separe IDs por vírgula. Deixe vazio (items: "") para desativar.
+discard:
+  items: minecraft:arrow
+  # Uma pilha por vez, sempre confirmada antes de avançar ao próximo slot.
+  stacksPerTick: 1
+  # 4 é rápido; as retentativas abaixo ainda cobrem lag do servidor.
+  confirmTicks: 4
+  confirmRetries: 5
+
+# Adicione outras vendas seguindo o modelo acima.
+
+selling:
+  # Liga o ataque somente depois do giro e da mira calibrada da placa.
+  # Isso impede clicar na placa errada durante o teleporte.
+  autoClickSelling: true
+  signAttacksPerStack: 1
+  # Duração do autoclick em ticks (20 ticks = 1 segundo).
+  signAttackHoldTicks: 8
+  # Cada pilha é confirmada antes de avançar. Mantido por compatibilidade.
+  takeStacksPerTick: 1
+  # 3 é rápido; cada transferência ainda precisa ser confirmada.
+  takeConfirmTicks: 3
+  takeConfirmRetries: 4
+  # Se um baú não abrir, volta pela homes.temporaryReturn, pula e tenta de
+  # novo esta quantidade de vezes antes de parar em segurança.
+  chestOpenRetries: 4
+  warpWaitTicks: 55
+  chestWaitTicks: 10
+  sellWaitTicks: 12
+  # Para após esta quantidade de tentativas sem a placa reduzir os itens.
+  # Assim nunca fica batendo na placa infinitamente.
+  maxNoProgressChecks: 5
+
+safety:
+  # Qualquer estado parado além deste tempo encerra a macro sem dropar itens.
+  stateTimeoutSeconds: 45

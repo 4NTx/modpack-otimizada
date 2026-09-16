@@ -1,0 +1,28 @@
+# ============================================================================
+# AutoLogin — Minecraft 1.8.9 / ChatTriggers
+# ============================================================================
+# Depois de editar, use /ct reload. Use /autologin help para ver os comandos.
+#
+# SEGURANÇA: este arquivo contém sua senha no loginCommand. Não envie este
+# arquivo, prints dele, ou o valor desse campo para ninguém.
+#
+# O comando /autologin on|off muda apenas a sessão atual. Para manter a
+# escolha depois de reiniciar, altere enabled aqui e execute /ct reload.
+
+# Liga o envio automático do comando de login ao entrar/relocar no servidor.
+enabled: true
+
+# Comando completo enviado pelo AutoLogin. Mantenha entre aspas.
+loginCommand: "/login 190anti"
+
+# Espera antes de enviar o comando, em ticks (20 ticks = 1 segundo).
+# 10 é um valor seguro para a maioria dos servidores.
+delayTicks: 10
+
+# Depois de enviar o login, ignora novos avisos por este tempo. Evita spam de
+# senha quando o servidor repete a mensagem de autenticação (20 ticks = 1 s).
+cooldownTicks: 200
+
+# Parte da mensagem do servidor que confirma que ele está pedindo /login.
+# A macro só age quando esta frase E "/login" aparecem na mesma mensagem.
+triggerText: "bem vindo de volta"

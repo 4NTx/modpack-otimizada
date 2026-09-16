@@ -1,0 +1,23 @@
+# Dados pessoais, credenciais e sessão do launcher
+data/.minecraft/launcher_profiles.json
+data/.minecraft/usercache.json
+data/.minecraft/usernamecache.json
+data/.minecraft/servers.dat
+data/.minecraft/servers.essential.dat
+data/.minecraft/config/ChatTriggers/modules/auto_login/config.yml
+data/.minecraft/NightX-Client/alts.json
+
+# Logs, crash reports, cache e dados gerados durante a execução
+data/.minecraft/logs/
+data/.minecraft/crash-reports/
+data/.minecraft/DEBUG/
+data/.minecraft/.mixin.out/
+data/gg.essential.mod/http-logs/
+data/.minecraft/gg.essential.mod/http-logs/
+data/.minecraft/config/ChatTriggers/modules/**/data/*log*.txt
+data/.minecraft/config/ChatTriggers/modules/**/data/error-log.txt
+
+# Dados pessoais que não fazem parte da modpack
+data/.minecraft/screenshots/
+data/.minecraft/saves/
+data/.minecraft/server-resource-packs/

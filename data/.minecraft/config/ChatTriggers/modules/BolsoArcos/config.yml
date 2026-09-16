@@ -1,0 +1,124 @@
+# =============================================================================
+# BolsoArcos — ChatTriggers 2.2.0 / Minecraft 1.8.9 / Java 8
+# =============================================================================
+# Depois de alterar este arquivo, use /ct reload. Ajuda: /bolsoarcos help
+#
+# INSTALAÇÃO DAS PAREDES
+# 1. Cada parede deve ter 5 baús de altura e um corredor livre a 1 bloco.
+# 2. Fique alinhado ao baú do MEIO da primeira coluna, olhando para a parede.
+# 3. Crie as homes abaixo. A macro caminha para a direita entre colunas.
+# 4. Com a macro desligada, calibre cada parede separadamente, mirando em cada
+#    baú: /bolsoarcos calibrar arcos 1 ... 5 e depois
+#    /bolsoarcos calibrar linhas 1 ... 5 (linha 1 = topo; linha 5 = baixo).
+#    Isso salva o alvo exato de cada parede, mesmo que elas estejam em locais
+#    ou orientações diferentes.
+#
+# CICLO
+# - Todo novo início parte do primeiro baú de linhas e de arcos. A macro só
+#   mantém o ponto atual enquanto continua ligada na mesma execução.
+# - Mantém ao menos 4 packs de linha na hotbar.
+# - Preenche os 27 slots principais com arcos, sem usar a hotbar para coleta.
+# - Executa /reparar -a, vai ao lixo e descarta APENAS arcos 100% reparados.
+# - Arcos ainda gastos são preservados e interrompem a macro por segurança.
+# =============================================================================
+
+homes:
+  # Primeiro baú da parede de arcos.
+  bows: /home arcosred
+  # Primeiro baú da parede de linhas.
+  strings: /home baus_aranha
+  # Local seguro onde os arcos reparados serão jogados para a frente.
+  trash: /home lixo
+  # Home exclusiva que a macro sobrescreve duas vezes antes de reparar, para
+  # retornar direto ao baú de arcos atual. Não use uma home importante aqui.
+  temporaryBows: /home bolsoarcos
+  # Home exclusiva para retomar a coleta de linhas no baú atual.
+  temporaryStrings: /home bolsoarcoslinha
+
+items:
+  # IDs do Minecraft 1.8.9. Não altere a menos que o servidor use itens custom.
+  bow: minecraft:bow
+  string: minecraft:string
+
+inventory:
+  # Estes itens ficam protegidos durante a preparação. Qualquer outro item
+  # pode ser trocado por linha/arco e devolvido ao baú aberto, sem drop.
+  protectedItems: minecraft:diamond_sword,minecraft:diamond_block
+  # 26 deixa um dos 27 slots principais reservado para a espada.
+  minimumBowsToRepair: 26
+
+repair:
+  # Comando do servidor que repara todos os arcos do inventário.
+  command: /reparar -a
+  # command_then_manual = tenta /reparar -a e usa o bloco se restarem arcos.
+  # manual = usa sempre /home reparar e o botão/bloco, arco por arco.
+  # command = usa somente /reparar -a e preserva arcos não reparados.
+  repairMode: manual
+  # Nunca repara o lote completo com menos de 4 packs (4 x 64 = 256 linhas).
+  minimumStringForFullRepair: 256
+  # Se /reparar -a não concluir (ex.: sem dinheiro), usa o reparo manual.
+  manualFallbackEnabled: true
+  manualHome: /home reparar
+  # A home precisa nascer olhando diretamente para o botão/bloco de reparo.
+
+behavior:
+  # Só religa o BolsoFarm quando a BolsoArcos terminar sem arcos pendentes:
+  # todos os arcos coletados foram reparados e descartados, e não há mais
+  # arcos nos baús pesquisados. Falta de linha, dinheiro ou falha NÃO religa.
+  resumeFarmWhenFinished: true
+  # O BolsoCiclo só avança quando esta macro concluir sem arcos pendentes.
+  resumeFarmCommand: /bolsociclo complete repair
+
+storage:
+  # Número máximo de colunas verificadas em cada parede antes de parar.
+  maxColumns: 128
+  # Interrompe a busca se esta quantidade de colunas inteiras (5 baús cada)
+  # não tiver arco/linha. Evita caminhar até 128 quando a parede acabou.
+  emptyColumnsBeforeStop: 10
+  # Após uma varredura completa sem item suficiente, zera o ponto salvo. Assim
+  # a próxima fase de reparação sempre começa no primeiro baú, sem recalibrar.
+  resetProgressOnExhaustion: true
+  # Tempo andando de uma coluna à próxima. Aumente se parar antes do próximo baú.
+  stepTicks: 15
+  # Mira padrão das cinco alturas, do topo para baixo. A calibração sobrescreve
+  # este valor em data/chest-pitch.json; não precisa editar manualmente.
+  rowPitch: -53,-34,0,34,53
+
+timing:
+  # 20 ticks = 1 segundo. Aumente estes valores se o servidor estiver lagado.
+  warpWaitTicks: 55
+  chestWaitTicks: 3
+  # Espera após cada retirada já confirmada pelo servidor.
+  takeWaitTicks: 1
+  # Esperas entre pegar do baú, colocar no inventário e confirmar a transação.
+  # Aumente mais se ainda houver lag ou item voltando ao baú.
+  # Perfil rápido, equivalente ao depósito em lote do BolsoFarm. A macro ainda
+  # confirma a troca antes de abrir outro baú.
+  transferClickWaitTicks: 2
+  transferConfirmWaitTicks: 3
+  # Shift-click de arco vai para inventário vazio em uma ação; pode confirmar
+  # mais rápido que a troca manual de linha/hotbar.
+  quickBowConfirmWaitTicks: 2
+  # Espera depois do /reparar -a antes de ir ao lixo.
+  repairWaitTicks: 40
+  # Ritmo rápido do botão manual; aumente se o servidor não registrar o reparo.
+  manualRepairWaitTicks: 2
+  # Espera entre cada arco descartado.
+  dropWaitTicks: 1
+  # Tamanho dos microajustes agachado (direita/esquerda/frente/trás) antes de
+  # considerar um baú inacessível. A macro volta ao ponto original ao final.
+  alignStepTicks: 1
+  # Espera entre os dois /sethome exigidos pelo servidor.
+  temporaryHomeWaitTicks: 25
+
+safety:
+  # Para com causa clara se um warp, baú ou reparo não avançar nesse tempo.
+  # Itens do inventário e baús são preservados.
+  stateTimeoutSeconds: 60
+  # Antes de encerrar a reparação e avançar o ciclo, retenta a coleta após lag/baú falhar.
+  retryAttempts: 3
+  # Espera entre uma recuperação e a nova tentativa de teleporte/coleta.
+  retryWaitTicks: 40
+  # Na tentativa indicada, ignora a home temporária e reposiciona pela home
+  # principal antes de encerrar a fase por baú inacessível.
+  homeFallbackAfterAttempts: 2
